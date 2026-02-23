@@ -6,6 +6,7 @@ import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +26,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var prefs: SharedPreferences
 
     private lateinit var adaptador: AdaptadorLugares
+    private lateinit var adaptadorCercanos: AdaptadorLugaresCercanos
+    private var listaCompleta: List<Lugar> = emptyList()
+    private var filtroNivel: Dificultad? = null
 
     private val requestPermissionLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -59,8 +63,8 @@ class MainActivity : AppCompatActivity() {
             mediaPlayer?.isLooping = true
         }
 
-        adaptador = AdaptadorLugares(emptyList()) { posicion ->
-            val idLugar = repositorio.idPorPosicion(posicion)
+        // Adapter principal
+        adaptador = AdaptadorLugares(emptyList()) { idLugar ->
             if (idLugar.isNotEmpty()) {
                 casosUsoLugar.mostrar(idLugar)
             }
@@ -73,12 +77,59 @@ class MainActivity : AppCompatActivity() {
             this.adapter = adaptador
         }
 
+        // Adapter senderismo y camping (horizontal)
+        adaptadorCercanos = AdaptadorLugaresCercanos(emptyList()) { idLugar ->
+            casosUsoLugar.mostrar(idLugar)
+        }
+        (application as AplicacionMisLugares).adaptadorCercanos = adaptadorCercanos
+
+        binding.contentMain.recyclerCercanos.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+            adapter = adaptadorCercanos
+        }
+
+        // Filtro de chips por nivel de dificultad
+        binding.contentMain.chipGroupNivel.setOnCheckedStateChangeListener { _, checkedIds ->
+            filtroNivel = when {
+                checkedIds.contains(R.id.chipPrincipiante) -> Dificultad.PRINCIPIANTE
+                checkedIds.contains(R.id.chipIntermedio) -> Dificultad.INTERMEDIO
+                checkedIds.contains(R.id.chipAvanzado) -> Dificultad.AVANZADO
+                else -> null
+            }
+            aplicarFiltro()
+        }
+
         binding.fab.setOnClickListener {
             val intent = Intent(this, EdicionLugarActivity::class.java)
             startActivity(intent)
         }
 
         casosUsoLocalizacion.ultimaLocalizacion()
+    }
+
+    private fun aplicarFiltro() {
+        val listaFiltrada = if (filtroNivel == null) {
+            listaCompleta
+        } else {
+            listaCompleta.filter { it.dificultad == filtroNivel }
+        }
+        adaptador.actualizarLugares(listaFiltrada)
+    }
+
+    private fun actualizarCercanos() {
+        val posActual = (application as AplicacionMisLugares).posicionActual
+        val lugaresSenderismo = listaCompleta.filter { it.tipo == TipoLugar.NATURALEZA }
+        val lugaresOrdenados = if (posActual != GeoPunto.SIN_POSICION) {
+            lugaresSenderismo.sortedBy { lugar ->
+                if (lugar.posicion != GeoPunto.SIN_POSICION) posActual.distancia(lugar.posicion)
+                else Double.MAX_VALUE
+            }
+        } else {
+            lugaresSenderismo.sortedBy { it.nombre }
+        }
+        adaptadorCercanos.actualizarLugares(lugaresOrdenados)
+        binding.contentMain.seccionSenderismo.visibility =
+            if (lugaresOrdenados.isNotEmpty()) View.VISIBLE else View.GONE
     }
 
     private fun iniciarMusica() {
@@ -108,7 +159,9 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         repositorio.iniciarEscuchador { listaActualizada ->
-            adaptador.actualizarLugares(listaActualizada)
+            listaCompleta = listaActualizada
+            aplicarFiltro()
+            actualizarCercanos()
         }
         casosUsoLocalizacion.activarProveedores()
         iniciarMusica()

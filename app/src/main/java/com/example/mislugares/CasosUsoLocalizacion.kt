@@ -65,7 +65,8 @@ class CasosUsoLocalizacion(
     fun permisoConcedido() {
         ultimaLocalizacion()
         activarProveedores()
-        aplicacion.repositorio.adaptador?.notifyDataSetChanged() // Refresca la lista
+        aplicacion.repositorio.adaptador?.notifyDataSetChanged()
+        aplicacion.adaptadorCercanos?.notifyDataSetChanged()
     }
 
     @SuppressLint("MissingPermission")
@@ -87,6 +88,7 @@ class CasosUsoLocalizacion(
     override fun onLocationChanged(location: Location) {
         actualizaMejorLocaliz(location)
         aplicacion.repositorio.adaptador?.notifyDataSetChanged()
+        aplicacion.adaptadorCercanos?.notifyDataSetChanged()
     }
 
     override fun onProviderDisabled(provider: String) {

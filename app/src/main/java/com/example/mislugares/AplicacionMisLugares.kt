@@ -40,4 +40,5 @@ class AplicacionMisLugares : Application() {
     }
 
     var posicionActual: GeoPunto = GeoPunto.SIN_POSICION
+    var adaptadorCercanos: AdaptadorLugaresCercanos? = null
 }

@@ -1,11 +1,63 @@
 <resources>
     <string name="app_name">Mis Lugares</string>
     <string name="title_activity_vista_lugar">Detalles del Lugar</string>
+
     <string-array name="dificultades">
         <item>Principiante</item>
         <item>Intermedio</item>
         <item>Avanzado</item>
     </string-array>
 
+    <!-- Dashboard -->
+    <string name="dashboard_title">Mis Lugares</string>
+    <string name="dashboard_subtitle">Explora tu entorno</string>
+    <string name="weather_loading">Cargando clima…</string>
+    <string name="weather_unavailable">Clima no disponible</string>
+    <string name="range_label">Radio de búsqueda</string>
+    <string name="range_5km">5 km</string>
+    <string name="range_10km">10 km</string>
+    <string name="range_25km">25 km</string>
+    <string name="range_50km">50 km</string>
 
+    <!-- Dashboard cards -->
+    <string name="card_cerca_title">Cerca de Mí</string>
+    <string name="card_cerca_desc">Lugares de interés en tu zona</string>
+    <string name="card_visitar_title">Por Visitar</string>
+    <string name="card_visitar_desc">Tu lista de lugares pendientes</string>
+    <string name="card_nivel_title">Nivel</string>
+    <string name="card_nivel_desc">Filtra por dificultad de ruta</string>
+    <string name="card_senderismo_title">Senderismo / Camping</string>
+    <string name="card_senderismo_desc">Rutas y campamentos cercanos</string>
+
+    <!-- Cerca de Mí screen -->
+    <string name="cerca_toolbar">Cerca de Mí</string>
+    <string name="cerca_empty">No hay lugares en este radio.\nAgrega uno con el botón +</string>
+
+    <!-- Por Visitar screen -->
+    <string name="visitar_toolbar">Por Visitar</string>
+    <string name="visitar_empty">No tienes lugares pendientes.\nMarca un lugar como \'Por visitar\'</string>
+    <string name="marcar_visitado">Marcar como visitado</string>
+    <string name="agregar_a_visitar">Agregar a Por Visitar</string>
+
+    <!-- Nivel screen -->
+    <string name="nivel_toolbar">Nivel de Dificultad</string>
+    <string name="nivel_principiante">Principiante</string>
+    <string name="nivel_intermedio">Intermedio</string>
+    <string name="nivel_avanzado">Avanzado</string>
+    <string name="nivel_empty">No hay lugares con esta dificultad.</string>
+
+    <!-- Senderismo/Camping screen -->
+    <string name="sendcamp_toolbar">Senderismo y Camping</string>
+    <string name="sendcamp_todos">Todos</string>
+    <string name="sendcamp_senderismo">Senderismo</string>
+    <string name="sendcamp_camping">Camping</string>
+    <string name="sendcamp_empty">No hay lugares de este tipo.\nAgrega uno con el botón +</string>
+
+    <!-- General -->
+    <string name="add_place">Agregar lugar</string>
+    <string name="sin_ubicacion">Sin ubicación disponible</string>
+    <string name="km_format">%1$.1f km</string>
+    <string name="m_format">%1$d m</string>
+    <string name="pendiente_visita_on">Agregado a Por Visitar</string>
+    <string name="pendiente_visita_off">Eliminado de Por Visitar</string>
 </resources>

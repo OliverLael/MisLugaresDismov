@@ -9,11 +9,12 @@ data class Lugar(
     val direccion: String = "",
     val posicion: GeoPunto = GeoPunto.SIN_POSICION,
     val tipo: TipoLugar = TipoLugar.OTROS,
-    val dificultad: Dificultad,
+    val dificultad: Dificultad = Dificultad.PRINCIPIANTE,
     var fotoUri: String? = null,
     var telefono: Long = 0L,
     val url: String? = null,
     val comentario: String? = null,
     val fecha: Long = System.currentTimeMillis(),
-    val valoracion: Float = 0.0f
+    val valoracion: Float = 0.0f,
+    val pendienteVisita: Boolean = false
 )

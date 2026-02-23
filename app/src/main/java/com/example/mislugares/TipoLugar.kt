@@ -14,5 +14,7 @@ enum class TipoLugar(
     EDUCACION("Educación", 0),
     DEPORTE("Deporte", 0),
     NATURALEZA("Naturaleza", 0),
-    GASOLINERA("Gasolinera", 0);
+    GASOLINERA("Gasolinera", 0),
+    SENDERISMO("Senderismo", 0),
+    CAMPING("Camping", 0);
 }

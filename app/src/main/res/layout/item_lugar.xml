@@ -1,99 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
-    android:layout_marginTop="4dp"
-    android:layout_marginEnd="8dp"
-    android:layout_marginBottom="4dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    android:layout_marginStart="12dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginBottom="5dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/hiking_card">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp">
 
-        <!-- ImageView para la foto del lugar -->
+        <!-- Thumbnail -->
         <ImageView
             android:id="@+id/foto"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginStart="3dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:contentDescription="Foto del lugar"
             android:scaleType="centerCrop"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.87"
+            android:background="@color/hiking_surface"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.MisLugares.Photo"
             tools:srcCompat="@drawable/mapa" />
 
-        <TextView
-            android:id="@+id/nombre"
+        <!-- Content -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:textAppearance="?attr/textAppearanceHeadline6"
-            app:layout_constraintEnd_toStartOf="@+id/distancia"
-            app:layout_constraintStart_toEndOf="@id/foto"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Nombre del Lugar" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
 
-        <TextView
-            android:id="@+id/distancia"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:textAppearance="?attr/textAppearanceBody2"
-            android:textColor="?attr/colorSecondary"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/nombre"
-            tools:text="1.2 km" />
+            <!-- Name + Distance row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/direccion"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:textAppearance="?attr/textAppearanceBody2"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="@id/nombre"
-            app:layout_constraintTop_toBottomOf="@id/nombre"
-            tools:text="Dirección del lugar" />
+                <TextView
+                    android:id="@+id/nombre"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/hiking_text_primary"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="Cerro de la Silla" />
 
-        <RatingBar
-            android:id="@+id/valoracion"
-            style="?android:attr/ratingBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:isIndicator="true"
-            android:numStars="5"
-            android:stepSize="0.5"
-            app:layout_constraintStart_toStartOf="@id/nombre"
-            app:layout_constraintTop_toBottomOf="@id/direccion"
-            tools:rating="3.5" />
+                <TextView
+                    android:id="@+id/distancia"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="@color/hiking_primary"
+                    android:textStyle="bold"
+                    android:layout_marginStart="8dp"
+                    tools:text="3.2 km" />
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/dificultad"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:text="Dificultad"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/nombre"
-            app:layout_constraintTop_toBottomOf="@id/valoracion"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:text="Dificultad: INTERMEDIO" />
+            <!-- Address -->
+            <TextView
+                android:id="@+id/direccion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:textSize="12sp"
+                android:textColor="@color/hiking_text_secondary"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Monterrey, Nuevo León" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <!-- Rating -->
+            <RatingBar
+                android:id="@+id/valoracion"
+                style="?android:attr/ratingBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:isIndicator="true"
+                android:numStars="5"
+                android:stepSize="0.5"
+                android:progressTint="@color/hiking_accent"
+                tools:rating="4.5" />
+
+            <!-- Difficulty badge -->
+            <TextView
+                android:id="@+id/dificultad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:background="@drawable/badge_dificultad"
+                tools:text="Avanzado"
+                tools:textColor="@color/white" />
+
+        </LinearLayout>
+    </LinearLayout>
 
 </androidx.cardview.widget.CardView>

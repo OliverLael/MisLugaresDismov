@@ -149,7 +149,6 @@ class VistaLugarActivity : AppCompatActivity() {
                             val lugarActualizado = l.copy(valoracion = valoracionNueva)
                             repositorio.actualizaPorId(idLugar, lugarActualizado)
                             lugarActual = lugarActualizado
-                            MainActivity.debeRefrescarLista = true
                         }
                     }
                 }
@@ -212,6 +211,8 @@ class VistaLugarActivity : AppCompatActivity() {
         menu?.findItem(R.id.accion_llegar)?.isEnabled = (lugarActual != null)
         menu?.findItem(R.id.accion_editar)?.isEnabled = (lugarActual != null)
         menu?.findItem(R.id.accion_borrar)?.isEnabled = (lugarActual != null)
+        menu?.findItem(R.id.accion_pendiente)?.title =
+            if (lugarActual?.pendienteVisita == true) "Quitar de Por Visitar" else "Agregar a Por Visitar"
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -222,6 +223,15 @@ class VistaLugarActivity : AppCompatActivity() {
             android.R.id.home -> { finish(); true }
             R.id.accion_compartir -> { casosUsoLugar.compartir(lugar); true }
             R.id.accion_llegar -> { casosUsoLugar.verMapa(lugar); true }
+            R.id.accion_pendiente -> {
+                val nuevoEstado = !lugar.pendienteVisita
+                repositorio.marcarPendiente(idLugar, nuevoEstado)
+                lugarActual = lugar.copy(pendienteVisita = nuevoEstado)
+                val msg = if (nuevoEstado) "Agregado a Por Visitar" else "Eliminado de Por Visitar"
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                invalidateOptionsMenu()
+                true
+            }
             R.id.accion_editar -> {
                 val intent = Intent(this, EdicionLugarActivity::class.java)
                 intent.putExtra("id", idLugar)

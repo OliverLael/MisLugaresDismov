@@ -2,16 +2,17 @@ package com.example.mislugares
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.location.Geocoder
 import android.media.MediaPlayer
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mislugares.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,22 +20,25 @@ class MainActivity : AppCompatActivity() {
     private val repositorio: LugarRepositorio by lazy {
         (application as AplicacionMisLugares).repositorio
     }
-    private val casosUsoLugar by lazy { CasosUsoLugar(this, repositorio) }
 
     private var mediaPlayer: MediaPlayer? = null
     private lateinit var prefs: SharedPreferences
 
-    private lateinit var adaptador: AdaptadorLugares
+    // Range selection in km (default 10)
+    private var rangoKmSeleccionado: Float = 10f
 
     private val requestPermissionLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
                 casosUsoLocalizacion.permisoConcedido()
+                cargarClima()
             }
         }
+
     private val casosUsoLocalizacion: CasosUsoLocalizacion by lazy {
         CasosUsoLocalizacion(this, requestPermissionLauncher)
     }
+
     private val preferenciasLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
@@ -42,43 +46,115 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    companion object {
-        var debeRefrescarLista = false
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setSupportActionBar(binding.toolbar)
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
+        configurarMusica()
+        configurarRangeSelector()
+        configurarCards()
+        configurarBotonesHeader()
+
+        casosUsoLocalizacion.ultimaLocalizacion()
+        cargarClima()
+    }
+
+    private fun configurarMusica() {
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer.create(this, R.raw.musica_fondo)
             mediaPlayer?.isLooping = true
         }
+    }
 
-        adaptador = AdaptadorLugares(emptyList()) { posicion ->
-            val idLugar = repositorio.idPorPosicion(posicion)
-            if (idLugar.isNotEmpty()) {
-                casosUsoLugar.mostrar(idLugar)
+    private fun configurarRangeSelector() {
+        // Restore saved range
+        rangoKmSeleccionado = prefs.getFloat("radio_busqueda", 10f)
+        val btnId = when (rangoKmSeleccionado) {
+            5f -> R.id.btn_5km
+            25f -> R.id.btn_25km
+            50f -> R.id.btn_50km
+            else -> R.id.btn_10km
+        }
+        binding.toggleRange.check(btnId)
+
+        binding.toggleRange.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                rangoKmSeleccionado = when (checkedId) {
+                    R.id.btn_5km -> 5f
+                    R.id.btn_25km -> 25f
+                    R.id.btn_50km -> 50f
+                    else -> 10f
+                }
+                prefs.edit().putFloat("radio_busqueda", rangoKmSeleccionado).apply()
             }
         }
-        repositorio.adaptador = adaptador
+    }
 
-        binding.contentMain.recyclerView.apply {
-            setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(this@MainActivity)
-            this.adapter = adaptador
-        }
-
-        binding.fab.setOnClickListener {
-            val intent = Intent(this, EdicionLugarActivity::class.java)
+    private fun configurarCards() {
+        binding.cardCerca.setOnClickListener {
+            val intent = Intent(this, CercaDeMiActivity::class.java)
+            intent.putExtra(CercaDeMiActivity.EXTRA_RANGO_KM, rangoKmSeleccionado)
             startActivity(intent)
         }
 
-        casosUsoLocalizacion.ultimaLocalizacion()
+        binding.cardVisitar.setOnClickListener {
+            startActivity(Intent(this, PorVisitarActivity::class.java))
+        }
+
+        binding.cardNivel.setOnClickListener {
+            startActivity(Intent(this, NivelActivity::class.java))
+        }
+
+        binding.cardSenderismo.setOnClickListener {
+            startActivity(Intent(this, SendCampingActivity::class.java))
+        }
+
+        binding.fab.setOnClickListener {
+            startActivity(Intent(this, EdicionLugarActivity::class.java))
+        }
+    }
+
+    private fun configurarBotonesHeader() {
+        binding.btnMapa.setOnClickListener {
+            startActivity(Intent(this, MapaActivity::class.java))
+        }
+        binding.btnPreferencias.setOnClickListener {
+            preferenciasLauncher.launch(Intent(this, PreferenciasActivity::class.java))
+        }
+    }
+
+    private fun cargarClima() {
+        val app = application as AplicacionMisLugares
+        val posicion = app.posicionActual
+
+        if (posicion == GeoPunto.SIN_POSICION) {
+            binding.tvCondicion.text = getString(R.string.weather_unavailable)
+            return
+        }
+
+        lifecycleScope.launch {
+            val clima = WeatherService.obtenerClima(posicion.latitud, posicion.longitud)
+            if (clima != null) {
+                binding.tvTemp.text = "${clima.tempCelsius}°C"
+                binding.tvEmoji.text = clima.emoji
+                binding.tvCondicion.text = clima.condicion
+                // Try to get city name from coordinates
+                try {
+                    val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
+                    @Suppress("DEPRECATION")
+                    val addresses = geocoder.getFromLocation(posicion.latitud, posicion.longitud, 1)
+                    val ciudad = addresses?.firstOrNull()?.locality ?: addresses?.firstOrNull()?.subAdminArea ?: ""
+                    binding.tvCiudad.text = ciudad
+                } catch (_: Exception) {
+                    binding.tvCiudad.text = ""
+                }
+            } else {
+                binding.tvCondicion.text = getString(R.string.weather_unavailable)
+            }
+        }
     }
 
     private fun iniciarMusica() {
@@ -95,9 +171,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun pararMusica(liberarRecursos: Boolean = false) {
         mediaPlayer?.let {
-            if (it.isPlaying) {
-                it.pause()
-            }
+            if (it.isPlaying) it.pause()
             if (liberarRecursos) {
                 it.release()
                 mediaPlayer = null
@@ -107,43 +181,19 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        repositorio.iniciarEscuchador { listaActualizada ->
-            adaptador.actualizarLugares(listaActualizada)
-        }
         casosUsoLocalizacion.activarProveedores()
         iniciarMusica()
+        cargarClima()
     }
 
     override fun onPause() {
         super.onPause()
         casosUsoLocalizacion.desactivarProveedores()
         pararMusica(liberarRecursos = false)
-        repositorio.detenerEscuchador()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         pararMusica(liberarRecursos = true)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_mapa -> {
-                val intent = Intent(this, MapaActivity::class.java)
-                startActivity(intent)
-                true
-            }
-            R.id.action_preferencias -> {
-                val intent = Intent(this, PreferenciasActivity::class.java)
-                preferenciasLauncher.launch(intent)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
     }
 }

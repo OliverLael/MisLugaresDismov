@@ -33,6 +33,8 @@ class RepositorioSqlite(private val context: Context) : LugarRepositorio {
     }
 
     private fun extraeLugar(cursor: Cursor): Lugar {
+        val pendienteIdx = cursor.getColumnIndex(LugaresBDHelper.KEY_PENDIENTE_VISITA)
+        val pendiente = if (pendienteIdx >= 0) cursor.getInt(pendienteIdx) == 1 else false
         return Lugar(
             id = cursor.getLong(cursor.getColumnIndexOrThrow(LugaresBDHelper.KEY_ID)).toString(),
             nombre = cursor.getString(cursor.getColumnIndexOrThrow(LugaresBDHelper.KEY_NOMBRE)),
@@ -50,7 +52,8 @@ class RepositorioSqlite(private val context: Context) : LugarRepositorio {
             url = cursor.getString(cursor.getColumnIndexOrThrow(LugaresBDHelper.KEY_URL)),
             comentario = cursor.getString(cursor.getColumnIndexOrThrow(LugaresBDHelper.KEY_COMENTARIO)),
             fecha = cursor.getLong(cursor.getColumnIndexOrThrow(LugaresBDHelper.KEY_FECHA)),
-            valoracion = cursor.getFloat(cursor.getColumnIndexOrThrow(LugaresBDHelper.KEY_VALORACION))
+            valoracion = cursor.getFloat(cursor.getColumnIndexOrThrow(LugaresBDHelper.KEY_VALORACION)),
+            pendienteVisita = pendiente
         )
     }
 
@@ -111,24 +114,17 @@ class RepositorioSqlite(private val context: Context) : LugarRepositorio {
             put(LugaresBDHelper.KEY_LONGITUD, lugar.posicion.longitud)
             put(LugaresBDHelper.KEY_LATITUD, lugar.posicion.latitud)
             put(LugaresBDHelper.KEY_TIPO, lugar.tipo.ordinal)
-            put(LugaresBDHelper.KEY_DIFICULTAD,lugar.dificultad.ordinal)
+            put(LugaresBDHelper.KEY_DIFICULTAD, lugar.dificultad.ordinal)
             put(LugaresBDHelper.KEY_FOTO_URI, lugar.fotoUri)
             put(LugaresBDHelper.KEY_TELEFONO, lugar.telefono)
             put(LugaresBDHelper.KEY_URL, lugar.url)
             put(LugaresBDHelper.KEY_COMENTARIO, lugar.comentario)
             put(LugaresBDHelper.KEY_FECHA, lugar.fecha)
             put(LugaresBDHelper.KEY_VALORACION, lugar.valoracion)
+            put(LugaresBDHelper.KEY_PENDIENTE_VISITA, if (lugar.pendienteVisita) 1 else 0)
         }
         bd.insert(LugaresBDHelper.TABLE_LUGARES, null, valores)
         iniciarEscuchador { adaptador?.actualizarLugares(it) }
-    }
-
-    private fun tamañoInicial(): Int {
-        val cursor = bd.rawQuery("SELECT COUNT(*) FROM ${LugaresBDHelper.TABLE_LUGARES}", null)
-        cursor.moveToFirst()
-        val count = cursor.getInt(0)
-        cursor.close()
-        return count
     }
 
     override fun tamaño(): Int {
@@ -156,12 +152,14 @@ class RepositorioSqlite(private val context: Context) : LugarRepositorio {
             put(LugaresBDHelper.KEY_LONGITUD, lugar.posicion.longitud)
             put(LugaresBDHelper.KEY_LATITUD, lugar.posicion.latitud)
             put(LugaresBDHelper.KEY_TIPO, lugar.tipo.ordinal)
+            put(LugaresBDHelper.KEY_DIFICULTAD, lugar.dificultad.ordinal)
             put(LugaresBDHelper.KEY_FOTO_URI, lugar.fotoUri)
             put(LugaresBDHelper.KEY_TELEFONO, lugar.telefono)
             put(LugaresBDHelper.KEY_URL, lugar.url)
             put(LugaresBDHelper.KEY_COMENTARIO, lugar.comentario)
             put(LugaresBDHelper.KEY_FECHA, lugar.fecha)
             put(LugaresBDHelper.KEY_VALORACION, lugar.valoracion)
+            put(LugaresBDHelper.KEY_PENDIENTE_VISITA, if (lugar.pendienteVisita) 1 else 0)
         }
         val count = bd.update(
             LugaresBDHelper.TABLE_LUGARES, valores,
@@ -172,5 +170,49 @@ class RepositorioSqlite(private val context: Context) : LugarRepositorio {
             iniciarEscuchador { adaptador?.actualizarLugares(it) }
         }
         return success
+    }
+
+    // ---- Nuevos filtros del dashboard ----
+
+    override fun obtenerPorRangoKm(rangoKm: Float, posActual: GeoPunto): List<Lugar> {
+        if (posActual == GeoPunto.SIN_POSICION) return emptyList()
+        return obtenerTodos().filter { lugar ->
+            lugar.posicion != GeoPunto.SIN_POSICION &&
+                    posActual.distancia(lugar.posicion) <= rangoKm * 1000
+        }
+    }
+
+    override fun obtenerPorDificultad(dificultad: Dificultad): List<Lugar> {
+        return obtenerTodos().filter { it.dificultad == dificultad }
+    }
+
+    override fun obtenerPorTipo(tipo: TipoLugar): List<Lugar> {
+        return obtenerTodos().filter { it.tipo == tipo }
+    }
+
+    override fun obtenerPendientes(): List<Lugar> {
+        return obtenerTodos().filter { it.pendienteVisita }
+    }
+
+    override fun marcarPendiente(id: String, pendiente: Boolean) {
+        val longId = id.toLongOrNull() ?: return
+        val valores = ContentValues().apply {
+            put(LugaresBDHelper.KEY_PENDIENTE_VISITA, if (pendiente) 1 else 0)
+        }
+        bd.update(
+            LugaresBDHelper.TABLE_LUGARES, valores,
+            "${LugaresBDHelper.KEY_ID} = ?", arrayOf(longId.toString())
+        )
+        iniciarEscuchador { adaptador?.actualizarLugares(it) }
+    }
+
+    private fun obtenerTodos(): List<Lugar> {
+        val lugares = mutableListOf<Lugar>()
+        val cursor = bd.rawQuery("SELECT * FROM ${LugaresBDHelper.TABLE_LUGARES} ORDER BY ${LugaresBDHelper.KEY_NOMBRE} ASC", null)
+        while (cursor.moveToNext()) {
+            lugares.add(extraeLugar(cursor))
+        }
+        cursor.close()
+        return lugares
     }
 }

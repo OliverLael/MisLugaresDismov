@@ -8,7 +8,7 @@ class LugaresBDHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 4
         private const val DATABASE_NAME = "lugares.db"
         const val TABLE_LUGARES = "lugares"
 
@@ -24,8 +24,8 @@ class LugaresBDHelper(context: Context) :
         const val KEY_COMENTARIO = "comentario"
         const val KEY_FECHA = "fecha"
         const val KEY_VALORACION = "valoracion"
-
         const val KEY_DIFICULTAD = "dificultad"
+        const val KEY_PENDIENTE_VISITA = "pendiente_visita"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -43,7 +43,8 @@ class LugaresBDHelper(context: Context) :
                 $KEY_URL TEXT,
                 $KEY_COMENTARIO TEXT,
                 $KEY_FECHA BIGINT,
-                $KEY_VALORACION REAL
+                $KEY_VALORACION REAL,
+                $KEY_PENDIENTE_VISITA INTEGER DEFAULT 0
             )
         """.trimIndent()
         db.execSQL(createTableQuery)
@@ -52,27 +53,27 @@ class LugaresBDHelper(context: Context) :
             "INSERT INTO $TABLE_LUGARES VALUES (null, " +
                     "'Cerro de la Silla', " +
                     "'Monterrey, Nuevo León', -100.2887, 25.6516, " +
-                    "${TipoLugar.NATURALEZA.ordinal}, ${Dificultad.AVANZADO.ordinal}, " +
+                    "${TipoLugar.SENDERISMO.ordinal}, ${Dificultad.AVANZADO.ordinal}, " +
                     "null, 0, '', " +
-                    "'Ruta exigente, solo para senderistas con experiencia.', ${System.currentTimeMillis()}, 4.5)"
+                    "'Ruta exigente, solo para senderistas con experiencia.', ${System.currentTimeMillis()}, 4.5, 0)"
         )
 
         db.execSQL(
             "INSERT INTO $TABLE_LUGARES VALUES (null, " +
                     "'Parque Ecológico Chipinque', " +
                     "'San Pedro Garza García, NL', -100.3500, 25.6167, " +
-                    "${TipoLugar.NATURALEZA.ordinal}, ${Dificultad.PRINCIPIANTE.ordinal}, " +
+                    "${TipoLugar.SENDERISMO.ordinal}, ${Dificultad.PRINCIPIANTE.ordinal}, " +
                     "null, 0, '',"+
-                    "'Senderos naturales con vistas increíbles.', ${System.currentTimeMillis()}, 5.0)"
+                    "'Senderos naturales con vistas increíbles.', ${System.currentTimeMillis()}, 5.0, 0)"
         )
 
         db.execSQL(
             "INSERT INTO $TABLE_LUGARES VALUES (null, " +
                     "'Parque La Estanzuela', " +
                     "'Carretera Nacional, NL', -100.1783, 25.5466, " +
-                    "${TipoLugar.NATURALEZA.ordinal}, ${Dificultad.INTERMEDIO.ordinal}, " +
+                    "${TipoLugar.CAMPING.ordinal}, ${Dificultad.INTERMEDIO.ordinal}, " +
                     "null, 0, '', " +
-                    "'Cascadas y rutas de senderismo.', ${System.currentTimeMillis()}, 4.8)"
+                    "'Cascadas y rutas de senderismo.', ${System.currentTimeMillis()}, 4.8, 0)"
         )
 
         db.execSQL(
@@ -81,23 +82,22 @@ class LugaresBDHelper(context: Context) :
                     "'Santa Catarina, NL', -100.4442, 25.6458, " +
                     "${TipoLugar.NATURALEZA.ordinal}, ${Dificultad.PRINCIPIANTE.ordinal}, " +
                     "null, 0, '', " +
-                    "'Imponentes cañones de roca caliza, ideal para ciclismo y escalada.', ${System.currentTimeMillis()}, 4.7)"
+                    "'Imponentes cañones de roca caliza, ideal para ciclismo y escalada.', ${System.currentTimeMillis()}, 4.7, 0)"
         )
 
         db.execSQL(
             "INSERT INTO $TABLE_LUGARES VALUES (null, " +
                     "'Cerro de las Mitras', " +
                     "'Monterrey/Santa Catarina, NL', -100.4208, 25.7042, " +
-                    "${TipoLugar.NATURALEZA.ordinal}, ${Dificultad.AVANZADO.ordinal}, " +
+                    "${TipoLugar.SENDERISMO.ordinal}, ${Dificultad.AVANZADO.ordinal}, " +
                     "null, 0, '', " +
-                    "'Ruta técnica con minas abandonadas y vistas panorámicas de la ciudad.', ${System.currentTimeMillis()}, 4.9)"
+                    "'Ruta técnica con minas abandonadas y vistas panorámicas de la ciudad.', ${System.currentTimeMillis()}, 4.9, 0)"
         )
-
-
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_LUGARES")
-        onCreate(db)
+        if (oldVersion < 4) {
+            db.execSQL("ALTER TABLE $TABLE_LUGARES ADD COLUMN $KEY_PENDIENTE_VISITA INTEGER DEFAULT 0")
+        }
     }
 }

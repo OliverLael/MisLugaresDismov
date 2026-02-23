@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Hiking Theme - Forest Green Palette -->
+    <color name="hiking_primary">#2E5C3C</color>
+    <color name="hiking_primary_dark">#1A3D28</color>
+    <color name="hiking_primary_light">#4A8C60</color>
+    <color name="hiking_accent">#A47B52</color>
+    <color name="hiking_background">#F2EDE4</color>
+    <color name="hiking_surface">#F8F5EE</color>
+    <color name="hiking_card">#FFFFFF</color>
+    <color name="hiking_text_primary">#1A1A1A</color>
+    <color name="hiking_text_secondary">#5A6472</color>
+    <color name="hiking_text_on_primary">#FFFFFF</color>
+    <color name="hiking_divider">#E0D9CE</color>
+    <color name="hiking_error">#B00020</color>
+
+    <!-- Card icon background tints -->
+    <color name="card_cerca_bg">#E8F0EA</color>
+    <color name="card_visitar_bg">#FFF3E0</color>
+    <color name="card_nivel_bg">#E8EAF0</color>
+    <color name="card_send_bg">#F0EBE8</color>
+
+    <!-- Difficulty colors -->
+    <color name="dif_principiante">#43A047</color>
+    <color name="dif_intermedio">#FB8C00</color>
+    <color name="dif_avanzado">#E53935</color>
+
+    <!-- Legacy (kept for compatibility) -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>

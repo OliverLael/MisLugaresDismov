@@ -135,4 +135,34 @@ class RepositorioFirebase(private val context: Context) : LugarRepositorio {
     override fun tamaño(): Int {
         return lugaresCache.size
     }
+
+    // ---- Nuevos filtros del dashboard ----
+
+    override fun obtenerPorRangoKm(rangoKm: Float, posActual: GeoPunto): List<Lugar> {
+        if (posActual == GeoPunto.SIN_POSICION) return emptyList()
+        return lugaresCache.filter { lugar ->
+            lugar.posicion != GeoPunto.SIN_POSICION &&
+                    posActual.distancia(lugar.posicion) <= rangoKm * 1000
+        }
+    }
+
+    override fun obtenerPorDificultad(dificultad: Dificultad): List<Lugar> {
+        return lugaresCache.filter { it.dificultad == dificultad }
+    }
+
+    override fun obtenerPorTipo(tipo: TipoLugar): List<Lugar> {
+        return lugaresCache.filter { it.tipo == tipo }
+    }
+
+    override fun obtenerPendientes(): List<Lugar> {
+        return lugaresCache.filter { it.pendienteVisita }
+    }
+
+    override fun marcarPendiente(id: String, pendiente: Boolean) {
+        if (id.isEmpty()) return
+        lugaresCollection?.document(id)?.update("pendienteVisita", pendiente)
+            ?.addOnSuccessListener {
+                Log.d("Firebase", "Pendiente actualizado: $id -> $pendiente")
+            }
+    }
 }

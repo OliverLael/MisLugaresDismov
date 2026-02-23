@@ -15,6 +15,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/accion_pendiente"
+        android:title="Agregar a Por Visitar"
+        android:icon="@android:drawable/ic_menu_add"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/accion_editar"
         android:title="Editar"
         android:icon="@android:drawable/ic_menu_edit"

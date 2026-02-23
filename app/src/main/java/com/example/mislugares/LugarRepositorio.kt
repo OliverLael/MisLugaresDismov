@@ -15,4 +15,11 @@ interface LugarRepositorio {
     fun actualizaPorId(id: String, lugar: Lugar): Boolean
     fun tamaño(): Int
     fun obtenerCursor(): Cursor?
+
+    // Nuevos filtros para las pantallas del dashboard
+    fun obtenerPorRangoKm(rangoKm: Float, posActual: GeoPunto): List<Lugar>
+    fun obtenerPorDificultad(dificultad: Dificultad): List<Lugar>
+    fun obtenerPorTipo(tipo: TipoLugar): List<Lugar>
+    fun obtenerPendientes(): List<Lugar>
+    fun marcarPendiente(id: String, pendiente: Boolean)
 }
